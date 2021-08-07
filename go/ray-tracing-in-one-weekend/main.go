@@ -6,34 +6,67 @@ import (
 	"image/png"
 	"log"
 	"os"
+	"sync"
 
+	"github.com/robertsmj1/learning/go/ray-tracing-in-one-weekend/vector"
 	progressbar "github.com/schollz/progressbar/v3"
 )
 
-func main() {
-	const width, height = 100, 100
-	bar := progressbar.Default(height)
-	img := image.NewNRGBA(image.Rect(0, 0, width, height))
+func init() {
+	log.SetOutput(os.Stdout)
+}
 
-	for y := 0; y < height; y++ {
-		bar.Add(1)
-		for x := 0; x < width; x++ {
-			img.Set(x, y, color.NRGBA{
-				R: uint8((x + y) & 255),
-				G: uint8((x + y) << 1 & 255),
-				B: uint8((x + y) << 2 & 255),
-				A: 255,
-			})
-		}
+func main() {
+	// Image
+	aspect_ratio := 16.0 / 9.0
+	image_width := 400
+	image_height := int(float64(image_width) / aspect_ratio)
+
+	// Camera
+	viewport_height := 2.0
+	viewport_width := aspect_ratio * viewport_height
+	focal_length := 1.0
+
+	origin := vector.Point{X: 0, Y: 0, Z: 0}
+	horizontal := vector.Vec3{X: viewport_width, Y: 0, Z: 0}
+	vertical := vector.Vec3{X: 0, Y: viewport_height, Z: 0}
+	lower_left_corner := origin.
+		Subtract(horizontal.Divide(2)).
+		Subtract(vertical.Divide(2)).
+		Subtract(vector.Vec3{X: 0, Y: 0, Z: focal_length})
+
+	log.Print(lower_left_corner.Log())
+
+	bar := progressbar.Default(int64(image_height))
+	img := image.NewNRGBA(image.Rect(0, 0, image_width, image_height))
+
+	var waitGroup sync.WaitGroup
+	waitGroup.Add(image_height)
+
+	for y := image_height - 1; y >= 0; y-- {
+		go func(y int) {
+			for x := 0; x < image_width; x++ {
+				u := float64(x) / (float64(image_width) - 1.0)
+				v := float64(y) / (float64(image_height) - 1.0)
+				direction := lower_left_corner.
+					Add(horizontal.Multiply(u)).
+					Add(vertical.Multiply(v)).
+					Subtract(origin)
+				ray := vector.Ray{Origin: origin, Direction: direction}
+				pixel := ray_color(ray)
+				img.Set(x, y, color.NRGBA{
+					R: uint8(pixel.R() * 255),
+					G: uint8(pixel.G() * 255),
+					B: uint8(pixel.B() * 255),
+					A: 255,
+				})
+			}
+			bar.Add(1)
+			waitGroup.Done()
+		}(y)
 	}
 
-	vec := Vec3{1.0, 2.0, 3.0}
-	vec2 := vec.Multiply(2)
-	vec3 := vec.Multiply(10).Divide(2)
-	println(vec.Log())
-	println(vec2.Log())
-	println(vec3.Log())
-	println(vec2.Add(vec3).Log())
+	waitGroup.Wait()
 
 	f, err := os.Create("image.png")
 	if err != nil {
@@ -48,4 +81,12 @@ func main() {
 	if err := f.Close(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func ray_color(r vector.Ray) vector.Color {
+	unit_dir := r.Direction.Unit()
+	t := 0.5 * (unit_dir.Y + 1.0)
+	return vector.Add(
+		vector.Color{X: 1, Y: 1, Z: 1}.Multiply(1.0-t),
+		vector.Color{X: 0.5, Y: 0.7, Z: 1}.Multiply(t))
 }
