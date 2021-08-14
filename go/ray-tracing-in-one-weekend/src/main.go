@@ -2,7 +2,6 @@ package main
 
 import (
 	"image"
-	"image/color"
 	"image/png"
 	"log"
 	"os"
@@ -52,12 +51,7 @@ func main() {
 					Subtract(origin)
 				ray := vector.Ray{Origin: origin, Direction: direction}
 				pixel := ray_color(ray)
-				img.Set(x, y, color.NRGBA{
-					R: uint8(pixel.R() * 255.99),
-					G: uint8(pixel.G() * 255.99),
-					B: uint8(pixel.B() * 255.99),
-					A: 255,
-				})
+				img.Set(x, image_height-y, pixel.ToNRGBA())
 			}
 			bar.Add(1)
 			waitGroup.Done()
@@ -81,7 +75,19 @@ func main() {
 	}
 }
 
+func hit_sphere(center vector.Point, radius float64, r vector.Ray) bool {
+	oc := r.Origin.Subtract(center)
+	a := vector.Dot(r.Direction, r.Direction)
+	b := 2.0 * vector.Dot(oc, r.Direction)
+	c := vector.Dot(oc, oc) - radius*radius
+	discriminant := (b * b) - (4 * a * c)
+	return discriminant > 0
+}
+
 func ray_color(r vector.Ray) vector.Color {
+	if hit_sphere(vector.Point{X: 0, Y: 0, Z: -1}, 0.5, r) {
+		return vector.Color{X: 1, Y: 0, Z: 0}
+	}
 	unit_dir := r.Direction.Unit()
 	t := 0.5 * (unit_dir.Y + 1.0)
 	return vector.Add(
