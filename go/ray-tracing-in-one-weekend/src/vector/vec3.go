@@ -9,7 +9,7 @@ type Vec3 struct {
 	X, Y, Z float64
 }
 
-func (v Vec3) Log() string {
+func (v Vec3) ToString() string {
 	return fmt.Sprintf("(%f, %f, %f)", v.X, v.Y, v.Z)
 }
 
@@ -30,7 +30,7 @@ func (v Vec3) Multiply(t float64) Vec3 {
 }
 
 func (v Vec3) Divide(t float64) Vec3 {
-	return v.Multiply(1 / t)
+	return v.Multiply(1.0 / t)
 }
 
 func (v1 Vec3) Dot(v2 Vec3) float64 {

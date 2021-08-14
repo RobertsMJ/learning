@@ -8,7 +8,7 @@ type Ray struct {
 }
 
 func (r Ray) Log() string {
-	return fmt.Sprintf("Origin: %s, Direction: %s", r.Origin.Log(), r.Direction.Log())
+	return fmt.Sprintf("Origin: %s, Direction: %s", r.Origin.ToString(), r.Direction.ToString())
 }
 
 func (r Ray) At(t float64) Point {

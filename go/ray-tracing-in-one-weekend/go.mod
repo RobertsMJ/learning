@@ -9,4 +9,4 @@ require (
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
 )
 
-replace github.com/robertsmj1/learning/go/ray-tracing-in-one-weekend/vector => ./vector
+replace github.com/robertsmj1/learning/go/ray-tracing-in-one-weekend/vector => ./src/vector

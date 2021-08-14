@@ -18,8 +18,8 @@ func init() {
 
 func main() {
 	// Image
-	aspect_ratio := 16.0 / 9.0
-	image_width := 400
+	aspect_ratio := 2.0
+	image_width := 200
 	image_height := int(float64(image_width) / aspect_ratio)
 
 	// Camera
@@ -35,8 +35,6 @@ func main() {
 		Subtract(vertical.Divide(2)).
 		Subtract(vector.Vec3{X: 0, Y: 0, Z: focal_length})
 
-	log.Print(lower_left_corner.Log())
-
 	bar := progressbar.Default(int64(image_height))
 	img := image.NewNRGBA(image.Rect(0, 0, image_width, image_height))
 
@@ -46,8 +44,8 @@ func main() {
 	for y := image_height - 1; y >= 0; y-- {
 		go func(y int) {
 			for x := 0; x < image_width; x++ {
-				u := float64(x) / (float64(image_width) - 1.0)
-				v := float64(y) / (float64(image_height) - 1.0)
+				u := float64(x) / (float64(image_width))
+				v := float64(y) / (float64(image_height))
 				direction := lower_left_corner.
 					Add(horizontal.Multiply(u)).
 					Add(vertical.Multiply(v)).
@@ -55,9 +53,9 @@ func main() {
 				ray := vector.Ray{Origin: origin, Direction: direction}
 				pixel := ray_color(ray)
 				img.Set(x, y, color.NRGBA{
-					R: uint8(pixel.R() * 255),
-					G: uint8(pixel.G() * 255),
-					B: uint8(pixel.B() * 255),
+					R: uint8(pixel.R() * 255.99),
+					G: uint8(pixel.G() * 255.99),
+					B: uint8(pixel.B() * 255.99),
 					A: 255,
 				})
 			}
