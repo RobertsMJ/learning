@@ -1,4 +1,4 @@
-module github.com/RobertsMJ/ray-tracing-in-one-weekend
+module github.com/robertsmj1/learning/go/ray-tracing-in-one-weekend
 
 go 1.16
 
