@@ -1,4 +1,4 @@
-package vector
+package main
 
 import "image/color"
 

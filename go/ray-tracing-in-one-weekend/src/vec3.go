@@ -1,4 +1,4 @@
-package vector
+package main
 
 import (
 	"fmt"
@@ -8,6 +8,8 @@ import (
 type Vec3 struct {
 	X, Y, Z float64
 }
+
+type Point = Vec3
 
 func (v Vec3) ToString() string {
 	return fmt.Sprintf("(%f, %f, %f)", v.X, v.Y, v.Z)
