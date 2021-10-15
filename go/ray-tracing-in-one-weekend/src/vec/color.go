@@ -1,4 +1,4 @@
-package main
+package vec
 
 import "image/color"
 

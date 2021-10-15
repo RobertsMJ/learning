@@ -8,6 +8,8 @@ import (
 	"os"
 	"sync"
 
+	"github.com/robertsmj1/learning/go/ray-tracing-in-one-weekend/src/hit"
+	"github.com/robertsmj1/learning/go/ray-tracing-in-one-weekend/src/vec"
 	progressbar "github.com/schollz/progressbar/v3"
 )
 
@@ -21,18 +23,22 @@ func main() {
 	image_width := 500
 	image_height := int(float64(image_width) / aspect_ratio)
 
+	var world hit.HittableList
+	world.Objects = append(world.Objects, hit.Sphere{Center: vec.Point{X: 0, Y: 0, Z: -1}, Radius: 0.5})
+	world.Objects = append(world.Objects, hit.Sphere{Center: vec.Point{X: 0, Y: -100.5, Z: -1}, Radius: 100})
+
 	// Camera
 	viewport_height := 2.0
 	viewport_width := aspect_ratio * viewport_height
 	focal_length := 1.0
 
-	origin := Point{X: 0, Y: 0, Z: 0}
-	horizontal := Vec3{X: viewport_width, Y: 0, Z: 0}
-	vertical := Vec3{X: 0, Y: viewport_height, Z: 0}
+	origin := vec.Point{X: 0, Y: 0, Z: 0}
+	horizontal := vec.Vec3{X: viewport_width, Y: 0, Z: 0}
+	vertical := vec.Vec3{X: 0, Y: viewport_height, Z: 0}
 	lower_left_corner := origin.
 		Subtract(horizontal.Divide(2)).
 		Subtract(vertical.Divide(2)).
-		Subtract(Vec3{X: 0, Y: 0, Z: focal_length})
+		Subtract(vec.Vec3{X: 0, Y: 0, Z: focal_length})
 
 	bar := progressbar.Default(int64(image_height))
 	img := image.NewNRGBA(image.Rect(0, 0, image_width, image_height))
@@ -49,8 +55,8 @@ func main() {
 					Add(horizontal.Multiply(u)).
 					Add(vertical.Multiply(v)).
 					Subtract(origin)
-				ray := Ray{Origin: origin, Direction: direction}
-				pixel := ray_color(ray)
+				ray := vec.Ray{Origin: origin, Direction: direction}
+				pixel := ray_color(ray, world)
 				img.Set(x, image_height-y, pixel.ToNRGBA())
 			}
 			bar.Add(1)
@@ -75,31 +81,15 @@ func main() {
 	}
 }
 
-func hit_sphere(center Point, radius float64, r Ray) float64 {
-	oc := r.Origin.Subtract(center)
-
-	a := r.Direction.LengthSquared()
-	half_b := oc.Dot(r.Direction)
-	c := oc.LengthSquared() - radius*radius
-	discriminant := half_b*half_b - a*c
-
-	if discriminant < 0 {
-		return -1.0
-	} else {
-		return (-half_b - math.Sqrt(discriminant)) / a
-	}
-}
-
-func ray_color(r Ray) Color {
-	t := hit_sphere(Point{X: 0, Y: 0, Z: -1}, 0.5, r)
-	if t > 0.0 {
-		n := r.At(t).Subtract(Vec3{X: 0, Y: 0, Z: -1})
-		return Color{X: n.X + 1, Y: n.Y + 1, Z: n.Z + 1}.Multiply(0.5)
+func ray_color(r vec.Ray, world hit.Hittable) vec.Color {
+	var rec hit.HitRecord
+	if world.Hit(r, 0, math.Inf(1), &rec) {
+		return rec.Normal.Add(vec.Color{X: 1, Y: 1, Z: 1}).Multiply(0.5)
 	}
 
 	unit_dir := r.Direction.Unit()
-	t = 0.5 * (unit_dir.Y + 1.0)
-	return Add(
-		Color{X: 1, Y: 1, Z: 1}.Multiply(1.0-t),
-		Color{X: 0.5, Y: 0.7, Z: 1}.Multiply(t))
+	t := 0.5 * (unit_dir.Y + 1)
+	return vec.Add(
+		vec.Color{X: 1, Y: 1, Z: 1}.Multiply(1.0-t),
+		vec.Color{X: 0.5, Y: 0.7, Z: 1}.Multiply(t))
 }
