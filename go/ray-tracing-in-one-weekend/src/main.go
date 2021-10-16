@@ -5,16 +5,21 @@ import (
 	"image/png"
 	"log"
 	"math"
+	"math/rand"
 	"os"
 	"sync"
+	"time"
 
+	"github.com/robertsmj1/learning/go/ray-tracing-in-one-weekend/src/gfx"
 	"github.com/robertsmj1/learning/go/ray-tracing-in-one-weekend/src/hit"
+	"github.com/robertsmj1/learning/go/ray-tracing-in-one-weekend/src/util"
 	"github.com/robertsmj1/learning/go/ray-tracing-in-one-weekend/src/vec"
 	progressbar "github.com/schollz/progressbar/v3"
 )
 
 func init() {
 	log.SetOutput(os.Stdout)
+	rand.Seed(time.Now().UnixNano())
 }
 
 func main() {
@@ -22,23 +27,16 @@ func main() {
 	aspect_ratio := 2.0
 	image_width := 500
 	image_height := int(float64(image_width) / aspect_ratio)
+	const samples_per_pixel = 100
 
 	var world hit.HittableList
-	world.Objects = append(world.Objects, hit.Sphere{Center: vec.Point{X: 0, Y: 0, Z: -1}, Radius: 0.5})
-	world.Objects = append(world.Objects, hit.Sphere{Center: vec.Point{X: 0, Y: -100.5, Z: -1}, Radius: 100})
+	world.Add(hit.Sphere{Center: vec.Point{X: 0, Y: 0, Z: -1}, Radius: 0.5})
+	world.Add(hit.Sphere{Center: vec.Point{X: 2, Y: 0, Z: -1}, Radius: 0.5})
+	world.Add(hit.Sphere{Center: vec.Point{X: -2, Y: 0, Z: -1}, Radius: 0.5})
+	world.Add(hit.Sphere{Center: vec.Point{X: 0, Y: -100.5, Z: -1}, Radius: 100})
 
 	// Camera
-	viewport_height := 2.0
-	viewport_width := aspect_ratio * viewport_height
-	focal_length := 1.0
-
-	origin := vec.Point{X: 0, Y: 0, Z: 0}
-	horizontal := vec.Vec3{X: viewport_width, Y: 0, Z: 0}
-	vertical := vec.Vec3{X: 0, Y: viewport_height, Z: 0}
-	lower_left_corner := origin.
-		Subtract(horizontal.Divide(2)).
-		Subtract(vertical.Divide(2)).
-		Subtract(vec.Vec3{X: 0, Y: 0, Z: focal_length})
+	camera := gfx.NewCamera()
 
 	bar := progressbar.Default(int64(image_height))
 	img := image.NewNRGBA(image.Rect(0, 0, image_width, image_height))
@@ -49,15 +47,14 @@ func main() {
 	for y := image_height - 1; y >= 0; y-- {
 		go func(y int) {
 			for x := 0; x < image_width; x++ {
-				u := float64(x) / (float64(image_width))
-				v := float64(y) / (float64(image_height))
-				direction := lower_left_corner.
-					Add(horizontal.Multiply(u)).
-					Add(vertical.Multiply(v)).
-					Subtract(origin)
-				ray := vec.Ray{Origin: origin, Direction: direction}
-				pixel := ray_color(ray, world)
-				img.Set(x, image_height-y, pixel.ToNRGBA())
+				pixel_color := vec.Color{X: 0, Y: 0, Z: 0}
+				for s := 0; s < samples_per_pixel; s++ {
+					u := (float64(x) + util.Random()) / float64(image_width-1.0)
+					v := (float64(y) + util.Random()) / float64(image_height-1.0)
+					r := camera.GetRay(u, v)
+					pixel_color = pixel_color.Add(ray_color(r, world))
+				}
+				img.Set(x, image_height-y, pixel_color.ToNRGBA(samples_per_pixel))
 			}
 			bar.Add(1)
 			waitGroup.Done()

@@ -1,26 +1,27 @@
 package vec
 
-import "image/color"
+import (
+	"image/color"
+
+	"github.com/robertsmj1/learning/go/ray-tracing-in-one-weekend/src/util"
+)
 
 type Color = Vec3
 
-func (c Color) R() float64 {
-	return c.X
-}
+func (c Color) ToNRGBA(samples_per_pixel int) color.NRGBA {
+	r := c.X
+	g := c.Y
+	b := c.Z
 
-func (c Color) G() float64 {
-	return c.Y
-}
+	scale := 1.0 / float64(samples_per_pixel)
+	r *= scale
+	g *= scale
+	b *= scale
 
-func (c Color) B() float64 {
-	return c.Z
-}
-
-func (c Color) ToNRGBA() color.NRGBA {
 	return color.NRGBA{
-		R: uint8(c.R() * 255.99),
-		G: uint8(c.G() * 255.99),
-		B: uint8(c.B() * 255.99),
+		R: uint8(256 * util.Clamp(r, 0.0, 0.999)),
+		G: uint8(256 * util.Clamp(g, 0.0, 0.999)),
+		B: uint8(256 * util.Clamp(b, 0.0, 0.999)),
 		A: 255,
 	}
 }

@@ -6,6 +6,10 @@ type HittableList struct {
 	Objects []Hittable
 }
 
+func (hl *HittableList) Add(hittable Hittable) {
+	hl.Objects = append(hl.Objects, hittable)
+}
+
 func (hl HittableList) Hit(r vec.Ray, t_min float64, t_max float64, rec *HitRecord) bool {
 	var temp_rec HitRecord
 	hit_anything := false
