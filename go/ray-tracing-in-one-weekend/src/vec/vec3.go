@@ -3,6 +3,8 @@ package vec
 import (
 	"fmt"
 	"math"
+
+	"github.com/robertsmj1/learning/go/ray-tracing-in-one-weekend/src/util"
 )
 
 type Vec3 struct {
@@ -29,6 +31,10 @@ func (v1 Vec3) Subtract(v2 Vec3) Vec3 {
 
 func (v Vec3) Multiply(t float64) Vec3 {
 	return Vec3{v.X * t, v.Y * t, v.Z * t}
+}
+
+func (v Vec3) MultiplyVec(v2 Vec3) Vec3 {
+	return Vec3{X: v.X * v2.X, Y: v.Y * v2.Y, Z: v.Z * v2.Z}
 }
 
 func (v Vec3) Divide(t float64) Vec3 {
@@ -61,6 +67,11 @@ func (v Vec3) Unit() Vec3 {
 	return v.Divide(v.Length())
 }
 
+func (v Vec3) NearZero() bool {
+	s := 1e-8
+	return math.Abs(v.X) < s && math.Abs(v.Y) < s && math.Abs(v.Z) < s
+}
+
 // TODO:MJR is this better?
 func Add(v1 Vec3, v2 Vec3) Vec3 {
 	return v1.Add(v2)
@@ -74,6 +85,10 @@ func Multiply(v Vec3, scalar float64) Vec3 {
 	return v.Multiply(scalar)
 }
 
+func MultiplyVec(v1 Vec3, v2 Vec3) Vec3 {
+	return v1.MultiplyVec(v2)
+}
+
 func Divide(v Vec3, scalar float64) Vec3 {
 	return v.Divide(scalar)
 }
@@ -84,4 +99,36 @@ func Dot(v1 Vec3, v2 Vec3) float64 {
 
 func Cross(v1 Vec3, v2 Vec3) Vec3 {
 	return v1.Cross(v2)
+}
+
+func Reflect(v Vec3, n Vec3) Vec3 {
+	return v.Subtract(n.Multiply(Dot(v, n) * 2))
+}
+
+func Random() Vec3 {
+	return Vec3{X: util.Random(), Y: util.Random(), Z: util.Random()}
+}
+
+func RandomInRange(min, max float64) Vec3 {
+	return Vec3{X: util.RandomInRange(min, max), Y: util.RandomInRange(min, max), Z: util.RandomInRange(min, max)}
+}
+
+func RandomInUnitSphere() Vec3 {
+	var p Vec3
+	for p = Random(); p.LengthSquared() >= 1; p = Random() {
+		return p
+	}
+	return p
+}
+
+func RandomUnitVector() Vec3 {
+	return RandomInUnitSphere().Unit()
+}
+
+func RandomInHemisphere(normal Vec3) Vec3 {
+	inUnitSphere := RandomInUnitSphere()
+	if inUnitSphere.Dot(normal) > 0.0 {
+		return inUnitSphere
+	}
+	return inUnitSphere.Negate()
 }

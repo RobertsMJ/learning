@@ -23,6 +23,7 @@ func (hl HittableList) Hit(r vec.Ray, t_min float64, t_max float64, rec *HitReco
 			rec.Normal = temp_rec.Normal
 			rec.T = temp_rec.T
 			rec.FrontFace = temp_rec.FrontFace
+			rec.Mat = temp_rec.Mat
 		}
 	}
 	return hit_anything

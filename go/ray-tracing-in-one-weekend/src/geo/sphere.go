@@ -1,17 +1,19 @@
-package hit
+package geo
 
 import (
 	"math"
 
+	"github.com/robertsmj1/learning/go/ray-tracing-in-one-weekend/src/hit"
 	"github.com/robertsmj1/learning/go/ray-tracing-in-one-weekend/src/vec"
 )
 
 type Sphere struct {
 	Center vec.Point
 	Radius float64
+	Mat    hit.Material
 }
 
-func (s Sphere) Hit(r vec.Ray, t_min float64, t_max float64, rec *HitRecord) bool {
+func (s Sphere) Hit(r vec.Ray, t_min float64, t_max float64, rec *hit.HitRecord) bool {
 	oc := r.Origin.Subtract(s.Center)
 
 	a := r.Direction.LengthSquared()
@@ -39,6 +41,7 @@ func (s Sphere) Hit(r vec.Ray, t_min float64, t_max float64, rec *HitRecord) boo
 	rec.P = r.At(rec.T)
 	outward_normal := rec.P.Subtract(s.Center).Divide(s.Radius)
 	rec.SetFaceNormal(r, outward_normal)
+	rec.Mat = s.Mat
 
 	return true
 }
