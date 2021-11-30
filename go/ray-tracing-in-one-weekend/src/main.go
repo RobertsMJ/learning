@@ -35,13 +35,14 @@ func main() {
 	var world hit.HittableList
 
 	material_ground := mat.Lambertian{Albedo: vec.Color{X: 0.8, Y: 0.8, Z: 0.0}}
-	material_center := mat.Lambertian{Albedo: vec.Color{X: 0.7, Y: 0.3, Z: 0.3}}
-	material_left := mat.Metal{Albedo: vec.Color{X: 0.8, Y: 0.8, Z: 0.0}, Fuzz: 0.3}
-	material_right := mat.Metal{Albedo: vec.Color{X: 0.8, Y: 0.6, Z: 0.2}, Fuzz: 1.0}
+	material_center := mat.Lambertian{Albedo: vec.Color{X: 0.1, Y: 0.2, Z: 0.5}}
+	material_left := mat.Dielectric{IR: 1.5}
+	material_right := mat.Metal{Albedo: vec.Color{X: 0.8, Y: 0.6, Z: 0.2}, Fuzz: 0.0}
 
 	world.Add(geo.Sphere{Center: vec.Point{X: 0, Y: -100.5, Z: -1}, Radius: 100, Mat: material_ground})
 	world.Add(geo.Sphere{Center: vec.Point{X: 0, Y: 0, Z: -1}, Radius: 0.5, Mat: material_center})
 	world.Add(geo.Sphere{Center: vec.Point{X: -1, Y: 0, Z: -1}, Radius: 0.5, Mat: material_left})
+	world.Add(geo.Sphere{Center: vec.Point{X: -1, Y: 0, Z: -1}, Radius: -0.4, Mat: material_left})
 	world.Add(geo.Sphere{Center: vec.Point{X: 1, Y: 0, Z: -1}, Radius: 0.5, Mat: material_right})
 
 	// Camera

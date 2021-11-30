@@ -105,6 +105,13 @@ func Reflect(v Vec3, n Vec3) Vec3 {
 	return v.Subtract(n.Multiply(Dot(v, n) * 2))
 }
 
+func Refract(uv Vec3, n Vec3, etai_over_etat float64) Vec3 {
+	cos_theta := math.Min(Dot(uv.Negate(), n), 1.0)
+	r_out_perp := uv.Add(n.Multiply(cos_theta)).Multiply(etai_over_etat)
+	r_out_parallel := n.Multiply(-math.Sqrt(math.Abs(1.0 - r_out_perp.LengthSquared())))
+	return r_out_perp.Add(r_out_parallel)
+}
+
 func Random() Vec3 {
 	return Vec3{X: util.Random(), Y: util.Random(), Z: util.Random()}
 }
