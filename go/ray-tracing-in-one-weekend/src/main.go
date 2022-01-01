@@ -32,22 +32,31 @@ func main() {
 	const samples_per_pixel = 100
 	const max_depth = 50
 
-	var world hit.HittableList
-
 	material_ground := mat.Lambertian{Albedo: vec.Color{X: 0.8, Y: 0.8, Z: 0.0}}
 	material_center := mat.Lambertian{Albedo: vec.Color{X: 0.1, Y: 0.2, Z: 0.5}}
 	material_left := mat.Dielectric{IR: 1.5}
 	material_right := mat.Metal{Albedo: vec.Color{X: 0.8, Y: 0.6, Z: 0.2}, Fuzz: 0.0}
+	// material_left := mat.Lambertian{Albedo: vec.Color{X: 0, Y: 0, Z: 1}}
+	// material_right := mat.Lambertian{Albedo: vec.Color{X: 1, Y: 0, Z: 0}}
 
+	var world hit.HittableList
 	world.Add(geo.Sphere{Center: vec.Point{X: 0, Y: -100.5, Z: -1}, Radius: 100, Mat: material_ground})
 	world.Add(geo.Sphere{Center: vec.Point{X: 0, Y: 0, Z: -1}, Radius: 0.5, Mat: material_center})
 	world.Add(geo.Sphere{Center: vec.Point{X: -1, Y: 0, Z: -1}, Radius: 0.5, Mat: material_left})
 	world.Add(geo.Sphere{Center: vec.Point{X: -1, Y: 0, Z: -1}, Radius: -0.4, Mat: material_left})
 	world.Add(geo.Sphere{Center: vec.Point{X: 1, Y: 0, Z: -1}, Radius: 0.5, Mat: material_right})
+	// world.Add(geo.Sphere{Center: vec.Point{X: -R, Y: 0, Z: -1}, Radius: R, Mat: material_left})
+	// world.Add(geo.Sphere{Center: vec.Point{X: R, Y: 0, Z: -1}, Radius: R, Mat: material_right})
 
 	// Camera
-	camera := gfx.NewCamera()
+	lookfrom := vec.Point{X: -2, Y: 2, Z: 1}
+	lookat := vec.Point{X: 0, Y: 0, Z: -1}
+	vup := vec.Point{X: 0, Y: 1, Z: 0}
+	dist_to_focus := lookfrom.Subtract(lookat).Length()
+	aperture := 0.0
+	camera := gfx.NewCamera(lookfrom, lookat, vup, 90.0, aspect_ratio, aperture, dist_to_focus)
 
+	// Render
 	bar := progressbar.Default(int64(image_height))
 	img := image.NewNRGBA(image.Rect(0, 0, image_width, image_height))
 

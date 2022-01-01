@@ -1,6 +1,9 @@
 package gfx
 
 import (
+	"math"
+
+	"github.com/robertsmj1/learning/go/ray-tracing-in-one-weekend/src/util"
 	"github.com/robertsmj1/learning/go/ray-tracing-in-one-weekend/src/vec"
 )
 
@@ -15,32 +18,33 @@ type camera struct {
 	Vertical        vec.Vec3
 }
 
-func NewCamera() camera {
-	aspect_ratio := 2.0
-	viewport_height := 2.0
+func NewCamera(lookfrom vec.Point, lookat vec.Point, vup vec.Vec3, vfov float64, aspect_ratio float64, aperture float64, focus_dist float64) camera {
+	theta := util.DegreesToRadius(vfov)
+	h := math.Tan(theta / 2.0)
+	viewport_height := 2.0 * h
 	viewport_width := aspect_ratio * viewport_height
-	focal_length := 1.0
 
-	origin := vec.Point{X: 0, Y: 0, Z: 0}
-	horizontal := vec.Vec3{X: viewport_width, Y: 0, Z: 0}
-	vertical := vec.Vec3{X: 0, Y: viewport_height, Z: 0}
-	lower_left_corner := origin.
-		Subtract(horizontal.Divide(2)).
-		Subtract(vertical.Divide(2)).
-		Subtract(vec.Vec3{X: 0, Y: 0, Z: focal_length})
+	w := lookfrom.Subtract(lookat).Unit()
+	u := vec.Cross(vup, w).Unit()
+	v := vec.Cross(w, u)
+
+	origin := lookfrom
+	horizontal := u.Multiply(viewport_width)
+	vertical := v.Multiply(viewport_height)
+	lower_left_corner := origin.Subtract(horizontal.Divide(2)).Subtract(vertical.Divide(2)).Subtract(w)
 
 	return camera{
 		Origin:          origin,
-		Horizontal:      horizontal,
-		Vertical:        vertical,
+		Horizontal:      u.Multiply(viewport_width),
+		Vertical:        v.Multiply(viewport_height),
 		LowerLeftCorner: lower_left_corner,
 	}
 }
 
-func (c camera) GetRay(u, v float64) vec.Ray {
+func (c camera) GetRay(s, t float64) vec.Ray {
 	dir := c.LowerLeftCorner.
-		Add(c.Horizontal.Multiply(u)).
-		Add(c.Vertical.Multiply(v)).
+		Add(c.Horizontal.Multiply(s)).
+		Add(c.Vertical.Multiply(t)).
 		Subtract(c.Origin)
 
 	return vec.Ray{Origin: c.Origin, Direction: dir}
