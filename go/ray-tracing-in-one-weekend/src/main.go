@@ -7,6 +7,7 @@ import (
 	"math"
 	"math/rand"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -26,38 +27,26 @@ func init() {
 
 func main() {
 	// Image
-	aspect_ratio := 2.0
-	image_width := 500
+	aspect_ratio := 16.0 / 9.0
+	image_width, _ := strconv.Atoi(getEnv("WIDTH", "500"))
 	image_height := int(float64(image_width) / aspect_ratio)
-	const samples_per_pixel = 100
+	const samples_per_pixel = 500
 	const max_depth = 50
 
-	material_ground := mat.Lambertian{Albedo: vec.Color{X: 0.8, Y: 0.8, Z: 0.0}}
-	material_center := mat.Lambertian{Albedo: vec.Color{X: 0.1, Y: 0.2, Z: 0.5}}
-	material_left := mat.Dielectric{IR: 1.5}
-	material_right := mat.Metal{Albedo: vec.Color{X: 0.8, Y: 0.6, Z: 0.2}, Fuzz: 0.0}
-	// material_left := mat.Lambertian{Albedo: vec.Color{X: 0, Y: 0, Z: 1}}
-	// material_right := mat.Lambertian{Albedo: vec.Color{X: 1, Y: 0, Z: 0}}
-
-	var world hit.HittableList
-	world.Add(geo.Sphere{Center: vec.Point{X: 0, Y: -100.5, Z: -1}, Radius: 100, Mat: material_ground})
-	world.Add(geo.Sphere{Center: vec.Point{X: 0, Y: 0, Z: -1}, Radius: 0.5, Mat: material_center})
-	world.Add(geo.Sphere{Center: vec.Point{X: -1, Y: 0, Z: -1}, Radius: 0.5, Mat: material_left})
-	world.Add(geo.Sphere{Center: vec.Point{X: -1, Y: 0, Z: -1}, Radius: -0.4, Mat: material_left})
-	world.Add(geo.Sphere{Center: vec.Point{X: 1, Y: 0, Z: -1}, Radius: 0.5, Mat: material_right})
-	// world.Add(geo.Sphere{Center: vec.Point{X: -R, Y: 0, Z: -1}, Radius: R, Mat: material_left})
-	// world.Add(geo.Sphere{Center: vec.Point{X: R, Y: 0, Z: -1}, Radius: R, Mat: material_right})
+	world := random_scene()
 
 	// Camera
-	lookfrom := vec.Point{X: -2, Y: 2, Z: 1}
-	lookat := vec.Point{X: 0, Y: 0, Z: -1}
-	vup := vec.Point{X: 0, Y: 1, Z: 0}
-	dist_to_focus := lookfrom.Subtract(lookat).Length()
-	aperture := 0.0
-	camera := gfx.NewCamera(lookfrom, lookat, vup, 90.0, aspect_ratio, aperture, dist_to_focus)
+	lookfrom := vec.Point{X: 13, Y: 2, Z: 3}
+	lookat := vec.Point{X: 0, Y: 0, Z: 0}
+	vup := vec.Vec3{X: 0, Y: 1, Z: 0}
+	// dist_to_focus := lookfrom.Subtract(lookat).Length()
+	dist_to_focus := 10.0
+	vfov := 20.0
+	aperture := 0.1
+	camera := gfx.NewCamera(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus)
 
 	// Render
-	bar := progressbar.Default(int64(image_height))
+	bar := progressbar.Default(int64(image_height * image_width))
 	img := image.NewNRGBA(image.Rect(0, 0, image_width, image_height))
 
 	var waitGroup sync.WaitGroup
@@ -74,8 +63,8 @@ func main() {
 					pixel_color = pixel_color.Add(ray_color(r, world, max_depth))
 				}
 				img.Set(x, image_height-y, pixel_color.ToNRGBA(samples_per_pixel))
+				bar.Add(1)
 			}
-			bar.Add(1)
 			waitGroup.Done()
 		}(y)
 	}
@@ -116,4 +105,49 @@ func ray_color(r vec.Ray, world hit.Hittable, depth int) vec.Color {
 	return vec.Add(
 		vec.Color{X: 1, Y: 1, Z: 1}.Multiply(1.0-t),
 		vec.Color{X: 0.5, Y: 0.7, Z: 1}.Multiply(t))
+}
+
+func random_scene() hit.HittableList {
+	var world hit.HittableList
+
+	ground_material := mat.Lambertian{Albedo: vec.Color{X: 0.5, Y: 0.5, Z: 0.5}}
+	world.Add(geo.Sphere{Center: vec.Point{X: 0, Y: -1000, Z: 0}, Radius: 1000, Mat: ground_material})
+
+	for a := -11; a < 11; a++ {
+		for b := -11; b < 11; b++ {
+			center := vec.Point{X: float64(a) + 0.9*util.Random(), Y: 0.2, Z: float64(b) + 0.9*util.Random()}
+			mat_type := util.Random()
+			switch {
+			case mat_type < 0.8:
+				albedo := vec.Random().MultiplyVec(vec.Random())
+				mat := mat.Lambertian{Albedo: albedo}
+				world.Add(geo.Sphere{Center: center, Radius: 0.2, Mat: mat})
+			case mat_type < 0.95:
+				albedo := vec.RandomInRange(0.5, 1)
+				fuzz := util.RandomInRange(0, 0.5)
+				mat := mat.Metal{Albedo: albedo, Fuzz: fuzz}
+				world.Add(geo.Sphere{Center: center, Radius: 0.2, Mat: mat})
+			default:
+				mat := mat.Dielectric{IR: 1.5}
+				world.Add(geo.Sphere{Center: center, Radius: 0.2, Mat: mat})
+			}
+		}
+	}
+
+	mat_lambertian := mat.Lambertian{Albedo: vec.Color{X: 0.4, Y: 0.2, Z: 0.1}}
+	mat_dielectric := mat.Dielectric{IR: 1.5}
+	mat_metal := mat.Metal{Albedo: vec.Color{X: 0.7, Y: 0.6, Z: 0.5}, Fuzz: 0.0}
+
+	world.Add(geo.Sphere{Center: vec.Point{X: -4, Y: 1, Z: 0}, Radius: 1, Mat: mat_lambertian})
+	world.Add(geo.Sphere{Center: vec.Point{X: 0, Y: 1, Z: 0}, Radius: 1, Mat: mat_dielectric})
+	world.Add(geo.Sphere{Center: vec.Point{X: 4, Y: 1, Z: 0}, Radius: 1, Mat: mat_metal})
+
+	return world
+}
+
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
 }

@@ -131,10 +131,9 @@ func RandomInUnitSphere() Vec3 {
 func RandomInUnitDisk() Vec3 {
 	for {
 		p := Vec3{X: util.RandomInRange(-1, 1), Y: util.RandomInRange(-1, 1), Z: 0}
-		if p.LengthSquared() >= 1 {
-			continue
+		if p.LengthSquared() < 1 {
+			return p
 		}
-		return p
 	}
 }
 
