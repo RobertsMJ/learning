@@ -1,9 +1,7 @@
-## Ray Tracing
-Following [Ray Tracing In One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
+## Pathfinding
+
+Following [Red Blob Games Pathfinding article](https://www.redblobgames.com/pathfinding/a-star/)
 
 ### To build and run:
 
-`WIDTH` and `HEIGHT` are avaiable as environment variables to configure the size of the resulting image
 `make run`
-
-![alt text](./images/random.png "Generated image")
