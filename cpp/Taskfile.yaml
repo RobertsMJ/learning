@@ -1,0 +1,12 @@
+version: '3'
+
+tasks:
+  init:
+    desc: "Initializes an empty project at the specified directory"
+    cmds:
+      - mkdir $PROJECT_NAME
+      - cp -r template/* $PROJECT_NAME
+      - cp -r template/.vscode $PROJECT_NAME/.vscode
+    env:
+      PROJECT_NAME: sample
+    silent: true
