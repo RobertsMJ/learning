@@ -9,13 +9,15 @@ struct GridLocation {
   int x, y;
 };
 
-bool operator==(GridLocation a, GridLocation b) {
+bool operator==(const GridLocation& a, const GridLocation& b) {
   return a.x == b.x && a.y == b.y;
 }
 
-bool operator!=(GridLocation a, GridLocation b) { return !(a == b); }
+bool operator!=(const GridLocation& a, const GridLocation& b) {
+  return !(a == b);
+}
 
-bool operator<(GridLocation a, GridLocation b) {
+bool operator<(const GridLocation& a, const GridLocation& b) {
   return tie(a.x, a.y) < tie(b.x, b.y);
 }
 

@@ -6,7 +6,8 @@
 #include "../utils/PriorityQueue.h"
 
 template <typename Location, typename Graph>
-void dijkstra_search(Graph graph, Location start, Location goal,
+void dijkstra_search(const Graph& graph, const Location& start,
+                     const Location& goal,
                      std::unordered_map<Location, Location>& came_from,
                      std::unordered_map<Location, double>& cost_so_far) {
   PriorityQueue<Location, double> frontier;
@@ -37,10 +38,9 @@ std::vector<Location> reconstruct_path(
     Location start, Location goal,
     std::unordered_map<Location, Location> came_from) {
   std::vector<Location> path;
-  Location current = goal;
-  while (current != start) {
+  for (Location current = goal; current != start;
+       current = came_from[current]) {
     path.push_back(current);
-    current = came_from[current];
   }
   path.push_back(start);
   std::reverse(path.begin(), path.end());

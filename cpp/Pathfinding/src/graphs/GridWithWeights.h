@@ -9,7 +9,8 @@ using std::unordered_set;
 struct GridWithWeights : SquareGrid {
   unordered_set<GridLocation> forests;
   GridWithWeights(int w, int h) : SquareGrid(w, h) {}
-  double cost(GridLocation from_node, GridLocation to_node) const {
+  double cost(const GridLocation& from_node,
+              const GridLocation& to_node) const {
     return forests.find(to_node) != forests.end() ? 5 : 1;
   }
 };
