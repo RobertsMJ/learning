@@ -4,6 +4,7 @@ using namespace std;
 #include "algs/AStar.h"
 #include "algs/BreadthFirstSearch.h"
 #include "algs/Dijkstra.h"
+#include "graphs/GridLocation.h"
 #include "graphs/GridUtils.h"
 #include "graphs/GridWithWeights.h"
 #include "graphs/SimpleGraph.h"
@@ -33,9 +34,9 @@ using namespace std;
 //   draw_grid(grid, &cost_so_far, nullptr, nullptr, &start, &goal);
 // }
 
-// Dijkstra
+// A*
 int main() {
-  GridWithWeights grid = make_diagram4();
+  auto grid = make_diagram4<GridLocation, double>();
   GridLocation start{1, 9}, goal{8, 3};
   unordered_map<GridLocation, GridLocation> came_from;
   unordered_map<GridLocation, double> cost_so_far;
