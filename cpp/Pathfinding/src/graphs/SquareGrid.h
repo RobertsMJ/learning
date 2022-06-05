@@ -20,13 +20,15 @@ struct SquareGrid {
 
   SquareGrid(int width, int height) : width(width), height(height) {}
 
-  bool in_bounds(GridLocation id) const {
+  bool in_bounds(const GridLocation& id) const {
     return 0 <= id.x && id.x < width && 0 <= id.y && id.y < height;
   }
 
-  bool passable(GridLocation id) const { return walls.find(id) == walls.end(); }
+  bool passable(const GridLocation& id) const {
+    return walls.find(id) == walls.end();
+  }
 
-  vector<GridLocation> neighbors(GridLocation id) const {
+  vector<GridLocation> neighbors(const GridLocation& id) const {
     vector<GridLocation> results;
 
     for (auto dir : DIRS) {
