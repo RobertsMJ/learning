@@ -6,7 +6,7 @@
 
 template <typename T, typename priority_t>
 struct PriorityQueue {
-  typedef std::pair<priority_t, T> PQElement;
+  using PQElement = std::pair<priority_t, T>;
   std::priority_queue<PQElement, std::vector<PQElement>,
                       std::greater<PQElement>>
       elements;

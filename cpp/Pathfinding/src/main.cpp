@@ -4,6 +4,7 @@ using namespace std;
 #include "algs/AStar.h"
 #include "algs/BreadthFirstSearch.h"
 #include "algs/Dijkstra.h"
+#include "algs/heuristics/Manhattan.h"
 #include "graphs/GridLocation.h"
 #include "graphs/GridUtils.h"
 #include "graphs/GridWithWeights.h"
@@ -36,16 +37,21 @@ using namespace std;
 
 // A*
 int main() {
-  auto grid = make_diagram4<GridLocation, double>();
-  GridLocation start{1, 9}, goal{8, 3};
-  unordered_map<GridLocation, GridLocation> came_from;
-  unordered_map<GridLocation, double> cost_so_far;
+  using LocationT = GridLocation;
+  using CostT = double;
 
-  a_star_search(grid, start, goal, came_from, cost_so_far);
+  auto grid = make_diagram4<LocationT, CostT>();
+  auto heuristic = manhattan<LocationT, CostT>;
+
+  LocationT start{1, 9}, goal{8, 3};
+  unordered_map<LocationT, LocationT> came_from;
+  unordered_map<LocationT, CostT> cost_so_far;
+
+  a_star_search(grid, heuristic, start, goal, came_from, cost_so_far);
 
   draw_grid(grid, nullptr, &came_from, nullptr, &start, &goal);
   cout << endl;
-  vector<GridLocation> path = reconstruct_path(start, goal, came_from);
+  vector<LocationT> path = reconstruct_path(start, goal, came_from);
   draw_grid(grid, nullptr, nullptr, &path, &start, &goal);
   cout << endl;
   draw_grid(grid, &cost_so_far, nullptr, nullptr, &start, &goal);

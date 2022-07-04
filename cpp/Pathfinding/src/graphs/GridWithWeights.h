@@ -22,7 +22,7 @@ template <typename Location, typename cost_t>
 GridWithWeights<Location, cost_t> make_diagram4() {
   GridWithWeights<Location, cost_t> grid(10, 10);
   add_rect(grid, 1, 7, 4, 9);
-  typedef Location L;
+  using L = Location;
   grid.forests = std::unordered_set<Location>{
       L{3, 4}, L{3, 5}, L{4, 1}, L{4, 2}, L{4, 3}, L{4, 4}, L{4, 5},
       L{4, 6}, L{4, 7}, L{4, 8}, L{5, 1}, L{5, 2}, L{5, 3}, L{5, 4},
